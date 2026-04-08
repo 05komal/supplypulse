@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>SupplyPulse — Intelligence Platform</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg:          #F4F1EC;
+    --surface:     #FFFFFF;
+    --surface-2:   #F9F7F3;
+    --border:      #E2DDD6;
+    --border-soft: #EDE9E3;
+    --text-primary:   #1C1917;
+    --text-secondary: #6B6560;
+    --text-muted:     #A09A94;
+    --amber:       #D97706;
+    --amber-light: #FEF3C7;
+    --amber-mid:   #F59E0B;
+    --teal:        #0D9488;
+    --teal-light:  #CCFBF1;
+    --blue:        #2563EB;
+    --blue-light:  #DBEAFE;
+    --rose:        #E11D48;
+    --rose-light:  #FFE4E6;
+    --green:       #16A34A;
+    --green-light: #DCFCE7;
+    --slate:       #475569;
+    --radius:      10px;
+    --shadow:      0 1px 3px rgba(0,0,0,.07), 0 4px 12px rgba(0,0,0,.05);
+    --shadow-lg:   0 4px 24px rgba(0,0,0,.10);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text-primary);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ── TOP NAV ── */
+  header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0 28px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 1px 0 var(--border);
+  }
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .logo-icon {
+    width: 34px; height: 34px;
+    background: linear-gradient(135deg, var(--amber) 0%, #B45309 100%);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+  }
+  .logo-text { font-size: 17px; font-weight: 700; letter-spacing: -.3px; }
+  .logo-text span { color: var(--amber); }
+  .header-right {
+    display: flex; align-items: center; gap: 16px;
+  }
+  .status-pill {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 12px; font-weight: 500; color: var(--green);
+    background: var(--green-light);
+    padding: 4px 10px; border-radius: 99px;
+  }
+  .status-dot {
+    width: 7px; height: 7px;
+    background: var(--green); border-radius: 50%;
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse {
+    0%,100% { opacity: 1; } 50% { opacity: .4; }
+  }
+  .version {
+    font-size: 12px; color: var(--text-muted);
+    font-family: 'DM Mono', monospace;
+  }
+
+  /* ── LAYOUT ── */
+  .app {
+    display: flex;
+    flex: 1;
+    height: calc(100vh - 60px);
+    overflow: hidden;
+  }
+
+  /* ── SIDEBAR ── */
+  aside {
+    width: 300px;
+    min-width: 300px;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+  }
+  .sidebar-section {
+    padding: 20px;
+    border-bottom: 1px solid var(--border-soft);
+  }
+  .sidebar-label {
+    font-size: 10px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 1px;
+    color: var(--text-muted);
+    margin-bottom: 12px;
+  }
+  textarea#queryInput {
+    width: 100%;
+    min-height: 120px;
+    padding: 12px;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13.5px;
+    color: var(--text-primary);
+    background: var(--surface-2);
+    resize: vertical;
+    outline: none;
+    transition: border-color .2s;
+    line-height: 1.5;
+  }
+  textarea#queryInput:focus { border-color: var(--amber); }
+  textarea#queryInput::placeholder { color: var(--text-muted); }
+
+  .run-btn {
+    width: 100%;
+    margin-top: 12px;
+    padding: 12px;
+    background: var(--amber);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px; font-weight: 600;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    transition: background .2s, transform .1s;
+  }
+  .run-btn:hover { background: #B45309; }
+  .run-btn:active { transform: scale(.98); }
+  .run-btn:disabled { background: var(--text-muted); cursor: not-allowed; }
+
+  .scenarios-grid {
+    display: flex; flex-direction: column; gap: 8px;
+  }
+  .scenario-chip {
+    padding: 9px 12px;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    font-size: 13px; font-weight: 500;
+    color: var(--text-secondary);
+    background: var(--surface-2);
+    cursor: pointer;
+    transition: all .15s;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .scenario-chip:hover {
+    border-color: var(--amber);
+    color: var(--amber);
+    background: var(--amber-light);
+  }
+  .chip-icon { font-size: 14px; }
+
+  .agent-status-list { display: flex; flex-direction: column; gap: 8px; }
+  .agent-status-item {
+    display: flex; align-items: center; gap: 10px;
+    font-size: 13px;
+  }
+  .agent-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--border);
+    transition: background .3s;
+    flex-shrink: 0;
+  }
+  .agent-dot.running { background: var(--amber-mid); animation: pulse 1s infinite; }
+  .agent-dot.done    { background: var(--green); }
+  .agent-dot.error   { background: var(--rose); }
+  .agent-name { font-weight: 500; color: var(--text-secondary); }
+  .agent-time { margin-left: auto; font-family: 'DM Mono', monospace; font-size: 11px; color: var(--text-muted); }
+
+  /* ── MAIN PANEL ── */
+  main {
+    flex: 1;
+    overflow-y: auto;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  /* ── AGENT GRID ── */
+  .agents-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+  }
+
+  /* ── CARD ── */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: var(--shadow);
+    transition: box-shadow .2s;
+  }
+  .card:hover { box-shadow: var(--shadow-lg); }
+
+  .card-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--border-soft);
+  }
+  .card-title {
+    display: flex; align-items: center; gap: 9px;
+    font-size: 13px; font-weight: 600; letter-spacing: .3px;
+    text-transform: uppercase; color: var(--text-secondary);
+  }
+  .card-icon { font-size: 16px; }
+  .card-badge {
+    font-size: 10px; font-weight: 600; letter-spacing: .5px;
+    padding: 3px 8px; border-radius: 99px;
+    text-transform: uppercase;
+  }
+  .badge-idle    { background: var(--surface-2); color: var(--text-muted); }
+  .badge-running { background: var(--amber-light); color: var(--amber); }
+  .badge-done    { background: var(--green-light); color: var(--green); }
+  .badge-error   { background: var(--rose-light); color: var(--rose); }
+
+  .card-body {
+    padding: 16px 18px;
+    min-height: 120px;
+    font-size: 13.5px;
+    line-height: 1.65;
+    color: var(--text-secondary);
+  }
+  .card-body.idle-state {
+    display: flex; align-items: center; justify-content: center;
+    color: var(--text-muted);
+    font-size: 13px;
+  }
+  .card-body pre {
+    white-space: pre-wrap; word-break: break-word;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13.5px; line-height: 1.65;
+  }
+  .error-text { color: var(--rose); font-size: 13px; }
+  .loading-dots span {
+    display: inline-block; width: 6px; height: 6px; border-radius: 50%;
+    background: var(--amber); margin: 0 2px;
+    animation: bounce .9s infinite;
+  }
+  .loading-dots span:nth-child(2) { animation-delay: .15s; }
+  .loading-dots span:nth-child(3) { animation-delay: .30s; }
+  @keyframes bounce {
+    0%,80%,100% { transform: translateY(0); opacity: .5; }
+    40% { transform: translateY(-6px); opacity: 1; }
+  }
+
+  /* ── ORCHESTRATOR FULL WIDTH ── */
+  .orchestrator-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: var(--shadow);
+  }
+  .orchestrator-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 20px;
+    background: linear-gradient(135deg, #FFFBEB 0%, #FEF3C7 100%);
+    border-bottom: 1px solid #FDE68A;
+  }
+  .orchestrator-title {
+    display: flex; align-items: center; gap: 10px;
+    font-size: 13px; font-weight: 700; letter-spacing: .4px;
+    text-transform: uppercase; color: #92400E;
+  }
+  .orchestrator-body {
+    padding: 20px;
+    font-size: 14px; line-height: 1.7;
+    color: var(--text-secondary);
+  }
+  .report-block {
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px 18px;
+  }
+  .report-block pre {
+    white-space: pre-wrap; word-break: break-word;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px; line-height: 1.7;
+  }
+
+  /* Risk badge in report */
+  .risk-CRITICAL { color: var(--rose); font-weight: 700; }
+  .risk-HIGH     { color: #EA580C; font-weight: 700; }
+  .risk-MEDIUM   { color: var(--amber); font-weight: 700; }
+  .risk-LOW      { color: var(--green); font-weight: 700; }
+
+  .meta-row {
+    display: flex; align-items: center; gap: 16px;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px; color: var(--text-muted);
+  }
+
+  /* Empty / welcome state */
+  .welcome-state {
+    display: flex; flex-direction: column; align-items: center;
+    justify-content: center; gap: 12px;
+    min-height: 300px;
+    text-align: center;
+  }
+  .welcome-state .big-icon { font-size: 48px; }
+  .welcome-state h2 { font-size: 20px; font-weight: 600; color: var(--text-primary); }
+  .welcome-state p { font-size: 14px; color: var(--text-muted); max-width: 340px; }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+  @media (max-width: 900px) {
+    .agents-grid { grid-template-columns: 1fr; }
+    aside { width: 260px; min-width: 260px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <div class="logo">
+    <div class="logo-icon">⚡</div>
+    <div class="logo-text">Supply<span>Pulse</span></div>
+  </div>
+  <div class="header-right">
+    <div class="status-pill"><div class="status-dot"></div>System Online</div>
+    <span class="version">v1.0.0 · INDIA</span>
+  </div>
+</header>
+
+<div class="app">
+
+  <!-- SIDEBAR -->
+  <aside>
+    <div class="sidebar-section">
+      <div class="sidebar-label">Intelligence Query</div>
+      <textarea id="queryInput" placeholder="Describe the supply chain scenario…&#10;&#10;e.g. Kandla port is delayed by 10 days. We have 3.2 weeks of urea stock. Rabi sowing season starts in 6 weeks. What should we do?"></textarea>
+      <button class="run-btn" id="runBtn" onclick="runAnalysis()">
+        <span id="btnIcon">⚡</span>
+        <span id="btnText">Run Multi-Agent Analysis</span>
+      </button>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">Quick Scenarios</div>
+      <div class="scenarios-grid">
+        <div class="scenario-chip" onclick="setQuery('kandla')">
+          <span class="chip-icon">⚓</span> Kandla Port Delay
+        </div>
+        <div class="scenario-chip" onclick="setQuery('urea')">
+          <span class="chip-icon">🌾</span> Urea Shortage
+        </div>
+        <div class="scenario-chip" onclick="setQuery('lng')">
+          <span class="chip-icon">🔥</span> LNG Alert
+        </div>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">Agent Status</div>
+      <div class="agent-status-list">
+        <div class="agent-status-item">
+          <div class="agent-dot" id="dot-disruption"></div>
+          <span class="agent-name">Disruption</span>
+          <span class="agent-time" id="time-disruption">—</span>
+        </div>
+        <div class="agent-status-item">
+          <div class="agent-dot" id="dot-supplier"></div>
+          <span class="agent-name">Supplier</span>
+          <span class="agent-time" id="time-supplier">—</span>
+        </div>
+        <div class="agent-status-item">
+          <div class="agent-dot" id="dot-demand"></div>
+          <span class="agent-name">Demand</span>
+          <span class="agent-time" id="time-demand">—</span>
+        </div>
+        <div class="agent-status-item">
+          <div class="agent-dot" id="dot-finance"></div>
+          <span class="agent-name">Finance</span>
+          <span class="agent-time" id="time-finance">—</span>
+        </div>
+        <div class="agent-status-item">
+          <div class="agent-dot" id="dot-orchestrator"></div>
+          <span class="agent-name">Orchestrator</span>
+          <span class="agent-time" id="time-orchestrator">—</span>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main id="mainPanel">
+
+    <!-- Welcome state -->
+    <div class="welcome-state" id="welcomeState">
+      <div class="big-icon">🌐</div>
+      <h2>SupplyPulse Ready</h2>
+      <p>Enter a supply chain scenario in the left panel and run the multi-agent analysis to get started.</p>
+    </div>
+
+    <!-- Agent outputs (hidden until run) -->
+    <div class="agents-grid" id="agentGrid" style="display:none">
+
+      <!-- Disruption -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title"><span class="card-icon">🚨</span> Disruption</div>
+          <span class="card-badge badge-idle" id="badge-disruption">Idle</span>
+          <span id="risk-disruption" style="margin-left:8px;font-size:11px;font-weight:600;"></span>
+        </div>
+        <div class="card-body idle-state" id="body-disruption">Awaiting analysis…</div>
+      </div>
+
+      <!-- Supplier -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title"><span class="card-icon">🏭</span> Supplier</div>
+          <span class="card-badge badge-idle" id="badge-supplier">Idle</span>
+        </div>
+        <div class="card-body idle-state" id="body-supplier">Awaiting analysis…</div>
+      </div>
+
+      <!-- Demand -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title"><span class="card-icon">📊</span> Demand</div>
+          <span class="card-badge badge-idle" id="badge-demand">Idle</span>
+        </div>
+        <div class="card-body idle-state" id="body-demand">Awaiting analysis…</div>
+      </div>
+
+      <!-- Finance -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title"><span class="card-icon">💰</span> Finance</div>
+          <span class="card-badge badge-idle" id="badge-finance">Idle</span>
+        </div>
+        <div class="card-body idle-state" id="body-finance">Awaiting analysis…</div>
+      </div>
+
+    </div>
+
+    <!-- Orchestrator Report -->
+    <div class="orchestrator-card" id="orchestratorCard" style="display:none">
+      <div class="orchestrator-header">
+        <div class="orchestrator-title">
+          <span>🎯</span> Orchestrator — Final Intelligence Report
+        </div>
+        <div class="meta-row">
+          <span id="meta-queryid">—</span>
+          <span id="meta-duration">—</span>
+        </div>
+      </div>
+      <div class="orchestrator-body" id="body-orchestrator">
+        <div class="idle-state" style="min-height:100px; display:flex; align-items:center; justify-content:center; color:var(--text-muted)">
+          Awaiting synthesis…
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+const SCENARIOS = {
+  kandla: "Kandla port is delayed by 10 days. We have 3.2 weeks of urea stock. Rabi sowing season starts in 6 weeks. What should we do?",
+  urea:   "There is a severe urea shortage across northern India. Prices have spiked 30%. Our primary Saudi supplier has stopped shipments. What are our options?",
+  lng:    "LNG supply from Qatar is disrupted due to shipping lane closures. We have 2 weeks of LNG stock. Winter demand is peaking. Assess the situation."
+};
+
+function setQuery(key) {
+  document.getElementById('queryInput').value = SCENARIOS[key];
+}
+
+function setAgent(name, state, text, time) {
+  const badge = document.getElementById('badge-' + name);
+  const body  = document.getElementById('body-' + name);
+  const dot   = document.getElementById('dot-' + name);
+  const tEl   = document.getElementById('time-' + name);
+
+  // badge
+  badge.className = 'card-badge badge-' + state;
+  badge.textContent = state === 'running' ? 'Running…' : state === 'done' ? 'Done' : state === 'error' ? 'Error' : 'Idle';
+
+  // dot
+  dot.className = 'agent-dot ' + (state === 'idle' ? '' : state);
+
+  // time
+  if (time) tEl.textContent = time;
+
+  // body
+  if (state === 'running') {
+    body.className = 'card-body';
+    body.innerHTML = `<div style="display:flex;align-items:center;gap:10px;color:var(--text-muted);font-size:13px">
+      <div class="loading-dots"><span></span><span></span><span></span></div> Analyzing…
+    </div>`;
+  } else if (state === 'done' && text) {
+    body.className = 'card-body';
+
+    const colored = formatReport(text);
+
+    let riskMatch = text.match(/(\d{1,3})\/100/);
+    let riskValue = riskMatch ? parseInt(riskMatch[1]) : null;
+
+    let riskBar = "";
+
+    if (riskValue !== null) {
+      let color = "#16A34A"; // green
+      if (riskValue >= 70) color = "#EA580C"; // high
+      else if (riskValue >= 40) color = "#F59E0B"; // medium
+
+      riskBar = `
+        <div style="margin-bottom:10px;">
+          <div style="font-size:12px;color:#6B6560;margin-bottom:4px;">Score</div>
+          <div style="background:#eee;border-radius:6px;height:8px;">
+            <div style="
+              width:${riskValue}%;
+              background:${color};
+              height:8px;
+              border-radius:6px;
+              transition:width 0.4s ease;
+            "></div>
+          </div>
+        </div>
+      `;
+    }
+
+    body.innerHTML = `
+      ${riskBar}
+      <div style="line-height:1.7">${colored}</div>
+    `;
+  } else if (state === 'error' && text) {
+    body.className = 'card-body';
+    body.innerHTML = `<p class="error-text">⚠️ ${escHtml(text)}</p>`;
+  }
+}
+
+function escHtml(t) {
+  return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function formatReport(text) {
+  // Highlight risk levels
+  return escHtml(text)
+    .replace(/\b(CRITICAL)\b/g, '<span class="risk-CRITICAL">CRITICAL</span>')
+    .replace(/\b(HIGH)\b/g,     '<span class="risk-HIGH">HIGH</span>')
+    .replace(/\b(MEDIUM)\b/g,   '<span class="risk-MEDIUM">MEDIUM</span>')
+    .replace(/\b(LOW)\b/g,      '<span class="risk-LOW">LOW</span>');
+}
+
+async function runAnalysis() {
+  const query = document.getElementById('queryInput').value.trim();
+  if (!query) { alert('Please enter a scenario first.'); return; }
+
+  // Show panels
+  document.getElementById('welcomeState').style.display = 'none';
+  document.getElementById('agentGrid').style.display = 'grid';
+  document.getElementById('orchestratorCard').style.display = 'block';
+
+  // Reset all
+  ['disruption','supplier','demand','finance'].forEach(n => setAgent(n,'idle','',null));
+  document.getElementById('dot-orchestrator').className = 'agent-dot';
+  document.getElementById('time-orchestrator').textContent = '—';
+  document.getElementById('badge-disruption').textContent = 'Idle';
+
+  const btn = document.getElementById('runBtn');
+  btn.disabled = true;
+  document.getElementById('btnText').textContent = 'Running…';
+  document.getElementById('btnIcon').textContent = '⏳';
+
+  const t0 = Date.now();
+
+  try {
+    // Run all 4 agents via your FastAPI endpoint
+    const agents = ['disruption', 'supplier', 'demand', 'finance'];
+
+    // Mark all as running
+    agents.forEach(n => setAgent(n, 'running'));
+    document.getElementById('dot-orchestrator').className = 'agent-dot running';
+
+    const res = await fetch('/query', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ query })
+    });
+
+    if (!res.ok) throw new Error(`Server error: ${res.status}`);
+    const data = await res.json();
+
+    const elapsed = ((Date.now() - t0) / 1000).toFixed(1) + 's';
+
+    // Fill agent outputs
+    for (const [name, output] of Object.entries(data.agent_outputs || {})) {
+      const isErr = output.includes('[AGENT ERROR]');
+      setAgent(name, isErr ? 'error' : 'done',
+        isErr ? output.replace('[AGENT ERROR]', '').trim() : output,
+        isErr ? '✕' : '✓'
+      );
+    }
+
+    // Orchestrator
+    document.getElementById('dot-orchestrator').className = 'agent-dot done';
+    document.getElementById('time-orchestrator').textContent = elapsed;
+    document.getElementById('meta-queryid').textContent = 'ID: ' + (data.query_id || '—');
+    document.getElementById('meta-duration').textContent = elapsed;
+
+    const orchBody = document.getElementById('body-orchestrator');
+    if (data.final_report) {
+      orchBody.innerHTML = `<div class="report-block"><pre>${formatReport(data.final_report)}</pre></div>`;
+    } else {
+      orchBody.innerHTML = `<p class="error-text">No synthesis report returned.</p>`;
+    }
+
+  } catch (err) {
+    ['disruption','supplier','demand','finance'].forEach(n =>
+      setAgent(n, 'error', 'Could not reach server.', '✕')
+    );
+    document.getElementById('dot-orchestrator').className = 'agent-dot error';
+    document.getElementById('body-orchestrator').innerHTML =
+      `<p class="error-text">⚠️ ${escHtml(err.message)}</p>`;
+  }
+
+  btn.disabled = false;
+  document.getElementById('btnText').textContent = 'Run Multi-Agent Analysis';
+  document.getElementById('btnIcon').textContent = '⚡';
+}
+
+// Allow Enter+Ctrl to submit
+document.getElementById('queryInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter' && e.ctrlKey) runAnalysis();
+});
+</script>
+</body>
+</html>
